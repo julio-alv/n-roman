@@ -20,5 +20,5 @@ npm install n-roman
 
 ```toml
 [dependencies]
-n-roman = "0.1.0"
+n-roman = "0.1.2"
 ```
