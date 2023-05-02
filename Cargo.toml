@@ -1,6 +1,6 @@
 [package]
 name = "n-roman"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "Converts integers to Roman numerals and vice versa"
 license = "MIT"
@@ -15,4 +15,4 @@ wasm-bindgen-test = "0.3.34"
 
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
