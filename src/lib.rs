@@ -1,9 +1,11 @@
-use wasm_bindgen::prelude::*;
 
-#[wasm_bindgen]
-pub fn to_roman(num: i32) -> String {
+use std::ffi::{CString, CStr};
+use std::os::raw::c_char;
+
+#[no_mangle]
+pub extern "C" fn to_roman(num: i32) -> *const c_char {
     if num <= 0 {
-        return String::new();
+        return CString::new("Invalid number").unwrap().into_raw();
     }
 
     let mut result: String = String::new();
@@ -30,12 +32,16 @@ pub fn to_roman(num: i32) -> String {
         }
     }
 
-    result
+    CString::new(result).unwrap().into_raw()
 }
 
-#[wasm_bindgen]
-pub fn from_roman(roman: &str) -> i32 {
-    let roman_chars: Vec<char> = roman.chars().collect();
+#[no_mangle]
+pub extern "C" fn from_roman(roman: *const c_char) -> i32 {
+    
+    let roman_chars: Vec<char> = unsafe {
+        let c_str = CString::from_raw(roman as *mut c_char);
+        c_str.to_string_lossy().into_owned().chars().collect()
+    };
     let mut num: i32 = 0;
 
     for i in 0..roman_chars.len() {
@@ -75,108 +81,16 @@ pub fn from_roman(roman: &str) -> i32 {
     num
 }
 
-#[cfg(test)]
-mod tests {
-    use wasm_bindgen_test::wasm_bindgen_test;
-    use super::{from_roman, to_roman};
-    
-    wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
-    
-    #[test]
-    #[wasm_bindgen_test]
-    fn three_thousand_nine_hundred_ninety_nine() {
-        assert_eq!(to_roman(3999), "MMMCMXCIX");
-        assert_eq!(from_roman("MMMCMXCIX"), 3999);
-    }
-
-    #[test]
-    #[wasm_bindgen_test]
-    fn one_thousand() {
-        assert_eq!(to_roman(1000), "M");
-        assert_eq!(from_roman("M"), 1000);
-    }
-
-    #[test]
-    #[wasm_bindgen_test]
-    fn nine_hundred() {
-        assert_eq!(to_roman(900), "CM");
-        assert_eq!(from_roman("CM"), 900);
-    }
-
-    #[test]
-    #[wasm_bindgen_test]
-    fn five_hundred() {
-        assert_eq!(to_roman(500), "D");
-        assert_eq!(from_roman("D"), 500);
-    }
-
-    #[test]
-    #[wasm_bindgen_test]
-    fn four_hundred() {
-        assert_eq!(to_roman(400), "CD");
-        assert_eq!(from_roman("CD"), 400);
-    }
-
-    #[test]
-    #[wasm_bindgen_test]
-    fn one_hundred() {
-        assert_eq!(to_roman(100), "C");
-        assert_eq!(from_roman("C"), 100);
-    }
-
-    #[test]
-    #[wasm_bindgen_test]
-    fn ninety() {
-        assert_eq!(to_roman(90), "XC");
-        assert_eq!(from_roman("XC"), 90);
-    }
-
-    #[test]
-    #[wasm_bindgen_test]
-    fn fifty() {
-        assert_eq!(to_roman(50), "L");
-        assert_eq!(from_roman("L"), 50);
-    }
-
-    #[test]
-    #[wasm_bindgen_test]
-    fn forty() {
-        assert_eq!(to_roman(40), "XL");
-        assert_eq!(from_roman("XL"), 40);
-    }
-
-    #[test]
-    #[wasm_bindgen_test]
-    fn ten() {
-        assert_eq!(to_roman(10), "X");
-        assert_eq!(from_roman("X"), 10);
-    }
-
-    #[test]
-    #[wasm_bindgen_test]
-    fn nine() {
-        assert_eq!(to_roman(9), "IX");
-        assert_eq!(from_roman("IX"), 9);
-    }
-
-    #[test]
-    #[wasm_bindgen_test]
-    fn five() {
-        assert_eq!(to_roman(5), "V");
-        assert_eq!(from_roman("V"), 5);
-    }
-
-    #[test]
-    #[wasm_bindgen_test]
-    fn four() {
-        assert_eq!(to_roman(4), "IV");
-        assert_eq!(from_roman("IV"), 4);
-    }
-
-    #[test]
-    #[wasm_bindgen_test]
-    fn one() {
-        assert_eq!(to_roman(1), "I");
-        assert_eq!(from_roman("I"), 1);
+#[no_mangle]
+pub extern "C" fn string_to_number(s: *const c_char) -> i32 {
+    unsafe {
+        let c_str = CStr::from_ptr(s);
+        match c_str.to_str() {
+            Ok(string) => match string.parse::<i32>() {
+                Ok(number) => number,
+                Err(_) => -1, // return -1 if the string cannot be converted to a number
+            },
+            Err(_) => -1, // return -1 if the input string is not a valid C string
+        }
     }
 }

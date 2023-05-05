@@ -1,5 +1,4 @@
 /target
 /Cargo.lock
 /pkg
-/examples/*/target
-/examples/*/Cargo.lock
+.venv
